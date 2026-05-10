@@ -21,6 +21,7 @@ services:
     network_mode: host
     environment:
       - DISPLAY=${DISPLAY}
+      - GROWING_RATE=${GROWING_RATE:-0}
     volumes:
       - ${XAUTHORITY}:/root/.Xauthority:ro
     stdin_open: true

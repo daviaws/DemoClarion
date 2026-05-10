@@ -15,15 +15,31 @@ namespace ClarionApp
 	{
 		#region properties
 		private WSProxy ws = null;
+		private WSProxy wsSpawn = null;
         private ClarionAgent agent;
         String creatureId = String.Empty;
         String creatureName = String.Empty;
+
+		private static readonly Random random = new Random();
+		private const int WORLD_X_MIN = 60;
+		private const int WORLD_X_MAX = 737;
+		private const int WORLD_Y_MIN = 57;
+		private const int WORLD_Y_MAX = 552;
+		// growingRate: 0 = no continuous spawn, 1-10 = items per 5s cycle
+		private int growingRate = 0;
 		#endregion
 
 		#region constructor
 		public MainClass() {
 			Application.Init();
 			Console.WriteLine ("ClarionApp V0.8");
+
+			String envRate = Environment.GetEnvironmentVariable("GROWING_RATE");
+			int parsed;
+            if (Int32.TryParse(envRate, out parsed))
+				growingRate = Math.Max(0, Math.Min(10, parsed));
+			Console.WriteLine(String.Format("Growing Rate: {0}/10", growingRate));
+
 			try
             {
 				String message = String.Empty;
@@ -50,6 +66,11 @@ namespace ClarionApp
                     ws.NewBrick(4, 49, 562, 796, 599);
                     ws.NewBrick(4, -2, 6, 50, 599);
 
+					// Second dedicated connection for spawning
+					wsSpawn = new WSProxy("localhost", 4011);
+					wsSpawn.Connect();
+					SpawnInitialItems();
+
                     if (!String.IsNullOrWhiteSpace(creatureId))
                     {
                         ws.SendStartCamera(creatureId);
@@ -60,6 +81,12 @@ namespace ClarionApp
 					agent = new ClarionAgent(ws,creatureId,creatureName);
                     agent.Run();
 					Console.Out.WriteLine("Running Simulation ...\n");
+
+					if (growingRate > 0) {
+						Thread spawnThread = new Thread(SpawnLoop);
+						spawnThread.IsBackground = true;
+						spawnThread.Start();
+					}
                 }
 				else {
 					Console.Out.WriteLine("The WorldServer3D engine was not found ! You must start WorldServer3D before running this application !");
@@ -86,7 +113,28 @@ namespace ClarionApp
 		public static void Main (string[] args)	{
 			new MainClass();
 		}
-			
+
+		private void SpawnInitialItems() {
+			int count = Math.Max(0, growingRate * 2);
+			Console.Out.WriteLine(String.Format("[Spawn] Initial: {0} jewels + {0} foods", count));
+			for (int i = 0; i < count; i++) {
+				wsSpawn.NewJewel(random.Next(0, 6), random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
+				wsSpawn.NewFood(random.Next(0, 3),  random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
+			}
+		}
+
+		private void SpawnLoop() {
+			while (true) {
+				Thread.Sleep(5000);
+				for (int i = 0; i < growingRate; i++) {
+					if (random.NextDouble() < 0.6)
+						wsSpawn.NewJewel(random.Next(0, 6), random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
+					else
+						wsSpawn.NewFood(random.Next(0, 3),  random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
+				}
+				Console.Out.WriteLine(String.Format("[Spawn] +{0} items", growingRate));
+			}
+		}
         #endregion
 	}
 }
