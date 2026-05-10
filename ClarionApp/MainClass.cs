@@ -83,6 +83,8 @@ namespace ClarionApp
 					Console.Out.WriteLine("Running Simulation ...\n");
 
 					if (growingRate > 0) {
+                        String spotResponse = ws.NewDeliverySpot(4, 300, 300);
+                        Console.WriteLine("[MainClass] NewDeliverySpot response: '" + spotResponse + "'");
 						Thread spawnThread = new Thread(SpawnLoop);
 						spawnThread.IsBackground = true;
 						spawnThread.Start();
@@ -123,18 +125,23 @@ namespace ClarionApp
 			}
 		}
 
-		private void SpawnLoop() {
-			while (true) {
-				Thread.Sleep(5000);
-				for (int i = 0; i < growingRate; i++) {
-					if (random.NextDouble() < 0.6)
-						wsSpawn.NewJewel(random.Next(0, 6), random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
-					else
-						wsSpawn.NewFood(random.Next(0, 3),  random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
-				}
-				Console.Out.WriteLine(String.Format("[Spawn] +{0} items", growingRate));
-			}
-		}
+        private void SpawnLoop() {
+            while (true) {
+                Thread.Sleep(5000);
+                for (int i = 0; i < growingRate; i++) {
+                    try {
+                        if (random.NextDouble() < 0.6)
+                            wsSpawn.NewJewel(random.Next(0, 6), random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
+                        else
+                            wsSpawn.NewFood(random.Next(0, 3), random.Next(WORLD_X_MIN, WORLD_X_MAX), random.Next(WORLD_Y_MIN, WORLD_Y_MAX));
+                    } catch (Exception e) {
+                        Console.WriteLine("[Spawn] Error: " + e.Message);
+                    }
+                    Thread.Sleep(200); // spread spawns to reduce concurrent modification window
+                }
+                Console.Out.WriteLine(String.Format("[Spawn] +{0} items", growingRate));
+            }
+        }
         #endregion
 	}
 }

@@ -24,5 +24,6 @@ services:
       - GROWING_RATE=${GROWING_RATE:-0}
     volumes:
       - ${XAUTHORITY}:/root/.Xauthority:ro
+      - ./clarion_data:/tmp/clarion_data
     stdin_open: true
     tty: true

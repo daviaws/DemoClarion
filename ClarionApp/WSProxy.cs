@@ -147,6 +147,26 @@ namespace ClarionApp
 
         #region Creature Command Methods
 
+        public String SendDeliverLeaflet(string creatureId, string leafletId)
+        {
+            String response = String.Empty;
+            try
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.Append("deliver ");
+                builder.Append(creatureId);
+                builder.Append(" ");
+                builder.Append(leafletId);
+                SendMessage(builder.ToString());
+                response = ReadMessage();
+                return response;
+            }
+            catch (WorldServerConnectionError connEx) { throw connEx; }
+            catch (WorldServerSendError sendEx)       { throw sendEx; }
+            catch (WorldServerReadError readEx)       { throw readEx; }
+            catch (Exception e) { throw new WorldServerSendError("Error while sending message", e); }
+        }
+
         /// <summary>
         /// Send Control Diff Comand
         /// </summary>
@@ -730,6 +750,38 @@ namespace ClarionApp
 		
 		#region New Methods
 		
+        public String NewDeliverySpot(Int32 type, Int32 x, Int32 y)
+        {
+            String response  = String.Empty;
+            String spotName  = String.Empty;
+
+            try
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.Append("newDeliverySpot ");
+                builder.Append(type);
+                builder.Append(" ");
+                builder.Append(x);
+                builder.Append(" ");
+                builder.Append(y);
+
+                SendMessage(builder.ToString());
+                response = ReadMessage();
+
+                if (!String.IsNullOrWhiteSpace(response))
+                {
+                    string[] tokens = response.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    spotName = (tokens != null && tokens.Length > 1) ? tokens[1] : null;
+                }
+
+                return spotName;
+            }
+            catch (WorldServerConnectionError connEx) { throw connEx; }
+            catch (WorldServerSendError sendEx)       { throw sendEx; }
+            catch (WorldServerReadError readEx)       { throw readEx; }
+            catch (Exception e) { throw new WorldServerSendError("Error while sending message", e); }
+        }
+
 		/// <summary>
 		/// Create a New Creature 
 		/// </summary>
