@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,9 +26,18 @@ namespace ClarionApp
 			Console.WriteLine ("ClarionApp V0.8");
 			try
             {
-                ws = new WSProxy("localhost", 4011);
-
-                String message = ws.Connect();
+				String message = String.Empty;
+                // Retry logic 10 times cooldown of 3 seconds
+				for (int attempt = 1; attempt <= 10; attempt++) {
+					Console.Out.WriteLine(String.Format("[Connect] Attempt {0}/10", attempt));
+					try {
+						ws = new WSProxy("localhost", 4011);
+						message = ws.Connect();
+						if (ws.IsConnected) break;
+					} catch (Exception) {}
+					Console.Out.WriteLine("[Connect] Retrying in 3s...");
+					Thread.Sleep(3000);
+				}
 
                 if (ws != null && ws.IsConnected)
                 {
@@ -81,6 +89,4 @@ namespace ClarionApp
 			
         #endregion
 	}
-	
-	
 }
