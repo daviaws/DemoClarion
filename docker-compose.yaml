@@ -1,0 +1,27 @@
+services:
+  coppelia:
+    image: brgsil/ws3d-coppelia
+    network_mode: host
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ${XAUTHORITY}:/root/.Xauthority:ro
+    devices:
+      - /dev/snd
+    ports:
+      - "4011:4011"
+
+  clarion-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - coppelia
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ${XAUTHORITY}:/root/.Xauthority:ro
+    stdin_open: true
+    tty: true
