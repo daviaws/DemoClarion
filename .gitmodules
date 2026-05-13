@@ -1,0 +1,3 @@
+[submodule "DemoJSOAR"]
+	path = DemoJSOAR
+	url = https://github.com/daviaws/DemoJSOAR

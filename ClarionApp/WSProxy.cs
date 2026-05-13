@@ -818,6 +818,7 @@ namespace ClarionApp
                     string[] tokens = response.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     creatureId = (tokens != null && tokens.Length > 0) ? tokens[0] : null;
                     creatureName = (tokens != null && tokens.Length > 1) ? tokens[1] : null;
+                    Console.WriteLine("[WSPRoxy] Creature created — ID: " + creatureId + " Name: " + creatureName);
                 }
 
             }

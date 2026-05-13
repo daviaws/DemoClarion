@@ -7,3 +7,8 @@ Run with:
 ```
 GROWING_RATE=1 docker compose up --build
 ```
+
+Run versus with:
+```
+docker compose -f docker-compose-versus.yaml up --build
+```

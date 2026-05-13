@@ -1,0 +1,48 @@
+services:
+  coppelia:
+    image: brgsil/ws3d-coppelia
+    network_mode: host
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ${XAUTHORITY}:/root/.Xauthority:ro
+    devices:
+      - /dev/snd
+    ports:
+      - "4011:4011"
+    
+  jsoar-app:
+      build:
+        context: ./DemoJSOAR
+        dockerfile: Dockerfile
+      depends_on:
+        - coppelia
+      network_mode: host
+      environment:
+        - DISPLAY=${DISPLAY}
+        - RULES_FILE=${RULES_FILE:-soar-rules.soar}
+      volumes:
+        - ${XAUTHORITY}:/root/.Xauthority:ro
+        - gradle-cache:/root/.gradle
+      stdin_open: true
+      tty: true
+
+  clarion-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - jsoar-app
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - GROWING_RATE=${GROWING_RATE:-0}
+    volumes:
+      - ${XAUTHORITY}:/root/.Xauthority:ro
+      - ./clarion_data:/tmp/clarion_data
+    stdin_open: true
+    tty: true
+
+volumes:
+  gradle-cache:

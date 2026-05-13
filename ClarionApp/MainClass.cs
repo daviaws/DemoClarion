@@ -40,6 +40,10 @@ namespace ClarionApp
 				growingRate = Math.Max(0, Math.Min(10, parsed));
 			Console.WriteLine(String.Format("Growing Rate: {0}/10", growingRate));
 
+			if (growingRate == 0) {
+				Thread.Sleep(60000);
+			}
+
 			try
             {
 				String message = String.Empty;
@@ -58,7 +62,9 @@ namespace ClarionApp
                 if (ws != null && ws.IsConnected)
                 {
                     Console.Out.WriteLine ("[SUCCESS] " + message + "\n");
-					ws.SendWorldReset();
+					if (growingRate > 0) {
+						ws.SendWorldReset();
+					}
                     ws.NewCreature(400, 200, 0, out creatureId, out creatureName);
 					ws.SendCreateLeaflet();
                     ws.NewBrick(4, 747, 2, 800, 567);
